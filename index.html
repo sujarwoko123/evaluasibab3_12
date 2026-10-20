@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian Informatika Kelas XII - SMA Negeri 1 Tangen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- HEADER -->
+    <header class="bg-indigo-900 text-white shadow-lg border-b-4 border-amber-400">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-2 rounded-full text-indigo-900 shadow">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">SMA NEGERI 1 TANGEN</h1>
+                    <p class="text-xs text-indigo-200">Asesmen Informatika - Bab 3: Berpikir Komputasional & Algoritma Pemrograman</p>
+                </div>
+            </div>
+            <div id="studentBadge" class="hidden bg-indigo-800 px-4 py-1.5 rounded-full text-sm border border-indigo-700">
+                <i class="fa-regular fa-user mr-1 text-amber-300"></i> <span id="badgeName" class="font-semibold"></span> | <span id="badgeClass"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 my-auto">
+        
+        <!-- SECTION 1: FORM DATA SISWA -->
+        <div id="startScreen" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-200">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Lembar Kerja Ujian Siswa</h2>
+                <p class="text-slate-500 text-sm mt-1">Silakan lengkapi identitas Anda dengan teliti sebelum memulai ujian.</p>
+            </div>
+
+            <form id="studentForm" onsubmit="startExam(event)" class="space-y-4 max-w-lg mx-auto">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="inputName" required placeholder="Masukkan Nama Lengkap" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Kelas</label>
+                        <select id="inputClass" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                            <option value="">-- Pilih Kelas --</option>
+                            <option value="X-B">X-B</option>
+                            <option value="X-C">X-C</option>
+                            <option value="X-D">X-D</option>
+                            <option value="XII-B">XII-B</option>
+                            <option value="XII-C">XII-C</option>
+                            <option value="XII-D">XII-D</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">No. Absen / NIS</label>
+                        <input type="text" id="inputNis" required placeholder="Contoh: 15 / 1234" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-lg mt-4 text-xs text-indigo-900 space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Aturan Ketentuan Ujian:</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-700">
+                        <li>Jumlah Soal: <strong>20 Pilihan Ganda</strong> & <strong>5 Pilihan Ganda Kompleks</strong>.</li>
+                        <li>Anda dapat berpindah ke soal sebelum dan sesudahnya dengan bebas.</li>
+                        <li>Soal dan Opsi Jawaban diacak oleh sistem.</li>
+                        <li>Nilai akan otomatis terekap ke Google Sheets setelah selesai.</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                    <span>Mulai Pengerjaan Ujian</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- SECTION 2: LEMBAR SOAL UJIAN -->
+        <div id="examScreen" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <!-- Exam Sub-Header (Progress) -->
+            <div class="bg-slate-50 border-b border-slate-200 p-4 flex justify-between items-center gap-3">
+                <div class="flex items-center space-x-2">
+                    <span id="questionCategory" class="px-3 py-1 bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-full">
+                        Pilihan Ganda
+                    </span>
+                    <span class="text-slate-600 font-semibold text-sm">Soal No: <span id="currentQNum" class="text-indigo-600 text-lg font-bold">1</span> / 25</span>
+                </div>
+                <div class="text-xs text-slate-500 font-medium hidden sm:block">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Periksa kembali jawaban Anda sebelum mengirim
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200 h-1.5">
+                <div id="progressBar" class="bg-indigo-600 h-1.5 transition-all duration-300" style="width: 0%;"></div>
+            </div>
+
+            <!-- Question Body -->
+            <div class="p-6 md:p-8">
+                <!-- Case Study / Question Box -->
+                <div id="questionBox" class="mb-6">
+                    <div id="caseStudyText" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-sm leading-relaxed">
+                        <!-- Case study inserted dynamically -->
+                    </div>
+                    <p id="questionText" class="text-base sm:text-lg font-medium text-slate-800 leading-relaxed">
+                        <!-- Question inserted dynamically -->
+                    </p>
+                    <p id="instructionText" class="text-xs text-indigo-600 mt-2 font-semibold hidden">
+                        * Pilihlah semua jawaban yang Anda anggap benar!
+                    </p>
+                </div>
+
+                <!-- Options Box -->
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Dynamic options will be rendered here -->
+                </div>
+
+                <!-- Action Button Container (Sebelumnya & Selanjutnya) -->
+                <div class="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button id="btnPrev" onclick="prevQuestion()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-5 rounded-xl transition flex items-center space-x-2 shadow-sm">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+                    <button id="btnNext" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl transition flex items-center space-x-2 shadow">
+                        <span id="btnNextText">Berikutnya</span>
+                        <i id="btnNextIcon" class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: HASIL UJIAN / SCORE BOARD -->
+        <div id="resultScreen" class="hidden bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-200 text-center">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800">Ujian Telah Selesai!</h2>
+            <p class="text-slate-500 text-sm mt-1">Terima kasih telah menyelesaikan ujian Informatika.</p>
+
+            <!-- Score Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Nilai Akhir</p>
+                    <p id="finalScore" class="text-3xl font-extrabold text-indigo-600 mt-1">0</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Soal Terjawab Sempurna</p>
+                    <p id="correctCount" class="text-3xl font-extrabold text-emerald-600 mt-1">0 / 25</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-semibold uppercase">Status Rekap</p>
+                    <p id="syncStatus" class="text-sm font-bold text-amber-600 mt-3 flex items-center justify-center">
+                        <i class="fa-solid fa-spinner animate-spin mr-1"></i> Mengirim...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Student Detail Card -->
+            <div class="bg-slate-50 p-4 rounded-xl text-left border border-slate-200 mb-6 text-sm space-y-2">
+                <div class="flex justify-between"><span class="text-slate-500">Nama:</span> <span id="resName" class="font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Kelas:</span> <span id="resClass" class="font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">No. Absen / NIS:</span> <span id="resNis" class="font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">Waktu Selesai:</span> <span id="resTime" class="font-bold"></span></div>
+            </div>
+
+            <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-6 rounded-xl transition inline-flex items-center space-x-2">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Kembali ke Halaman Utama</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-800 text-slate-400 text-xs text-center py-3 border-t border-slate-700">
+        &copy; 2026 Tim Informatika SMA Negeri 1 Tangen. All Rights Reserved.
+    </footer>
+
+    <script>
+        // GOOGLE SCRIPT WEB APP URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2PsQZob2R3JL6qRuOayL_gAUwBuKed1xlykkI319mFL58nCB49pitQIgVFH064PZkRA/exec"; 
+
+        // Raw Master Question Bank (20 Single Choice + 5 Complex Choice)
+        const rawQuestions = [
+            // --- 20 SOAL PILIHAN GANDA TUNGGAL (5 OPSI A-E) ---
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 1: Tim robotika SMAN 1 Tangen sedang mendesain robot pemilah sampah otomatis. Robot harus mengenali jenis benda dan menentukan tindakan tanpa membuang banyak memori mikrokontroler.",
+                question: "Penerapan konsep Berpikir Komputasional yang paling tepat dalam melakukan pencarian (search) pola objek secara efisien adalah...",
+                options: [
+                    "Menggunakan teknik Linear Search pada semua sampel data gambar tanpa presisi",
+                    "Memanfaatkan Binary Search pohon keputusan berdasarkan ekstraksi fitur utama objek",
+                    "Menulis ulang seluruh perintah program tanpa fungsi atau modulasi",
+                    "Menyimpan seluruh gambar sampel berukuran besar ke dalam memori RAM Arduino",
+                    "Mematikan fungsi pengenalan pola dan menggantinya dengan sakelar manual"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 2: Seorang siswa ingin mengukur suhu ruangan menggunakan sensor LM35 yang terhubung ke pin Analog Arduino. Data angka yang didapat harus dikonversi ke derajat Celsius sebelum ditampilkan.",
+                question: "Langkah berpikir komputasional berupa 'Dekomposisi' dalam kasus tersebut ditunjukkan oleh...",
+                options: [
+                    "Mengabaikan jenis sensor dan langsung menulis kode program perulangan",
+                    "Membagi masalah menjadi: pembacaan nilai ADC, rumus konversi Volt ke Celsius, dan penayangan hasil",
+                    "Membuat tampilan LCD terlihat bagus tanpa memperhatikan keakuratan rumus pembacaan",
+                    "Menggabungkan seluruh komponen periferal ke dalam satu fungsi `setup()` tanpa `loop()`",
+                    "Menghapus logika kalibrasi agar program berjalan lebih cepat"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Di dalam bahasa C Arduino, sintaks berikut ini akan menyebabkan kesalahan kompilasi (*Syntax Error*). Manakah penulisan yang salah?",
+                options: [
+                    "int LED = 13;",
+                    "#define RELAY_PIN 8",
+                    "#include <DHT.h>;",
+                    "void setup() { pinMode(13, OUTPUT); }",
+                    "float suhu = 36.5;"
+                ],
+                answer: 2
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 3: Sebuah sistem irigasi tetes otomatis membaca kelembaban tanah via sensor analog. Jika kelembaban < 300, pompa (Pin 7) menyala; jika tidak, pompa mati.",
+                question: "Struktur perintah percabangan C Arduino yang paling tepat untuk mengimplementasikan logika di atas adalah...",
+                options: [
+                    "if (val < 300) { digitalWrite(7, HIGH); } else { digitalWrite(7, LOW); }",
+                    "if (val > 300) { digitalWrite(7, HIGH); } else { digitalWrite(7, LOW); }",
+                    "while (val < 300) { analogWrite(7, 255); }",
+                    "switch(val) { case 300: digitalWrite(7, HIGH); break; }",
+                    "for (int i=0; i<300; i++) { digitalWrite(7, HIGH); }"
+                ],
+                answer: 0
+            },
+            {
+                type: "single",
+                question: "Fungsi `Serial.begin(9600);` pada program Arduino memiliki peran kritis, yaitu...",
+                options: [
+                    "Menentukan batas maksimum pin digital yang bisa digunakan",
+                    "Mengatur kecepatan transmisi data serial dalam satuan baud rate (bits per second)",
+                    "Menyalakan lampu indikator LED pada pin TX dan RX secara konstan",
+                    "Mereset memori Flash Arduino setiap kali komunikasi dioperasikan",
+                    "Mengubah sinyal analog menjadi digital secara otomatis"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 4: Diberikan potongan kode Arduino berikut:\n`int nilai = analogRead(A0);`",
+                question: "Rentang nilai keluaran variabel `nilai` yang dihasilkan dari fungsi `analogRead()` pada modul Arduino UNO adalah...",
+                options: [
+                    "0 hingga 255",
+                    "0 hingga 1023",
+                    "-128 hingga 127",
+                    "0 hingga 5000",
+                    "LOW hingga HIGH"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Manakah ekspresi logika Boolean yang akan menghasilkan nilai `TRUE` jika `suhu = 32` dan `kelembaban = 70`?",
+                options: [
+                    "(suhu > 35) && (kelembaban == 70)",
+                    "(suhu <= 30) || (kelembaban < 60)",
+                    "!(suhu == 32)",
+                    "(suhu >= 30) && (kelembaban >= 60)",
+                    "(suhu != 32) || (kelembaban ! 70)"
+                ],
+                answer: 3
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 5: Seorang teknisi ingin mengontrol tingkat kecerahan LED secara perlahan (fading) dari redup ke terang menggunakan pin PWM digital.",
+                question: "Perintah pemrograman Arduino yang harus digunakan adalah...",
+                options: [
+                    "digitalWrite(pin, HIGH);",
+                    "digitalRead(pin);",
+                    "analogWrite(pin, value);",
+                    "analogRead(pin);",
+                    "pinMode(pin, INPUT_PULLUP);"
+                ],
+                answer: 2
+            },
+            {
+                type: "single",
+                question: "Apakah akibatnya jika seorang programmer mengabaikan penulisan tanda kurung kurawal `{ }` pada blok fungsi `void loop()` di Arduino?",
+                options: [
+                    "Program akan tetap berjalan namun responnya melambat",
+                    "Compiler akan mengeluarkan pesan eror karena batasan blok fungsi tidak terdefinisi",
+                    "Pin digital Arduino akan terbakar secara otomatis",
+                    "Nilai variabel diubah menjadi konstan",
+                    "Komunikasi Serial akan langsung terputus"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 6: Diberikan deklarasi Array sebagai berikut:\n`int lampu[4] = {2, 4, 6, 8};`",
+                question: "Berapakah nilai dari elemen `lampu[2]`?",
+                options: [
+                    "2",
+                    "4",
+                    "6",
+                    "8",
+                    "Undefined (Eror)"
+                ],
+                answer: 2
+            },
+            {
+                type: "single",
+                question: "Perhatikan sintaks perulangan berikut:\n`for (int i = 0; i < 5; i++) { Serial.println(i); }` \nBerapa kalilah angka dicetak ke Serial Monitor?",
+                options: [
+                    "4 kali",
+                    "5 kali",
+                    "6 kali",
+                    "1 kali",
+                    "Tidak pernah"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Konstanta bawaan `INPUT_PULLUP` pada perintah `pinMode(pin, INPUT_PULLUP)` berfungsi untuk...",
+                options: [
+                    "Mengaktifkan resistor internal pull-up sehingga pin bernilai HIGH saat tidak ditekan",
+                    "Meningkatkan arus daya masukan hingga 12 Volt",
+                    "Mengubah pin digital menjadi pin daya keluaran analog",
+                    "Mematikan fungsi tombol agar tidak bergetar (bounce)",
+                    "Menghubungkan pin secara langsung ke Ground"
+                ],
+                answer: 0
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 7: Siswa kelas XII ingin membuat alat peringatan banjir. Buzzer harus berbunyi jika Ketinggian Air > 80 cm DAN Curah Hujan > 50 mm.",
+                question: "Operator bitwise/boolean manakah yang menghubungkan kedua syarat tersebut?",
+                options: [
+                    "Operator || (OR)",
+                    "Operator && (AND)",
+                    "Operator ! (NOT)",
+                    "Operator ^ (XOR)",
+                    "Operator == (Equal)"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Manakah perbedaan utama antara `Serial.print()` dan `Serial.println()`?",
+                options: [
+                    "`Serial.print()` mencetak teks berwarna merah sedangkan `println()` berwarna hijau",
+                    "`Serial.println()` menambahkan karakter baris baru (*newline*) di akhir output",
+                    "`Serial.print()` hanya digunakan untuk angka floating point",
+                    "`Serial.println()` bekerja lebih cepat daripada `Serial.print()`",
+                    "Tidak ada perbedaan, keduanya persis sama"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Pernyataan berikut yang paling tepat menggambarkan kegunaan **Library Arduino** (misalnya `<Servo.h>`) adalah...",
+                options: [
+                    "Menambah kecepatan clock processor Arduino",
+                    "Menyediakan fungsi dan kelas siap pakai untuk mempermudah kontrol komponen kompleks",
+                    "Menghemat konsumsi listrik baterai Arduino",
+                    "Menggantikan kebutuhan komponen hardware seperti kabel jumper",
+                    "Menghapus kebutuhan fungsi `setup()` dan `loop()`"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 8: Di laboratorium SMAN 1 Tangen, sebuah sistem pemantau kelembaban mengalami eror. Program `Serial.print(sensor)` menampilkan angka acak padahal sensor tidak tersambung.",
+                question: "Penyebab paling logis dari fenomena 'floating pin' ini adalah...",
+                options: [
+                    "Pin analog berada pada keadaan melayang (floating) karena tidak terhubung ke beban/resistor stabil",
+                    "Microcontroller mengalami kelebihan muatan listrik statis berlebih",
+                    "Kecepatan Baud rate Serial Monitor terlalu cepat",
+                    "Fungsi `analogRead()` rusak permanen",
+                    "Kabel USB Arduino terputus"
+                ],
+                answer: 0
+            },
+            {
+                type: "single",
+                question: "Penggunaan `#define` dalam program Arduino bertujuan untuk...",
+                options: [
+                    "Mengalokasikan memori RAM secara dinamis saat runtime",
+                    "Mendefinisikan konstanta makro pra-pemrosesan tanpa mengonsumsi memori variabel",
+                    "Membuat perulangan otomatis pada fungsi utama",
+                    "Memanggil pustaka dari folder external",
+                    "Menghentikan program jika terjadi bug"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Jika variabel `byte x = 0b00000101;` (Nilai desimal: 5) dilakukan operasi bitwise shift left `x = x << 1;`, berapakah nilai `x` dalam desimal sekarang?",
+                options: [
+                    "2",
+                    "5",
+                    "10",
+                    "20",
+                    "0"
+                ],
+                answer: 2
+            },
+            {
+                type: "single",
+                caseStudy: "Studi Kasus 9: Sebuah lampu LED terhubung ke Pin 13. Diberikan kode:\n`digitalWrite(13, HIGH); delay(1000); digitalWrite(13, LOW); delay(500);`",
+                question: "Berapa lama durasi total satu siklus kedipan (menyala hingga mati) tersebut?",
+                options: [
+                    "1 Detik",
+                    "1.5 Detik",
+                    "2 Detik",
+                    "0.5 Detik",
+                    "1000 Detik"
+                ],
+                answer: 1
+            },
+            {
+                type: "single",
+                question: "Karakteristik penting dari tipe data `boolean` pada pemrograman Arduino adalah...",
+                options: [
+                    "Dapat menyimpan teks berukuran hingga 255 karakter",
+                    "Hanya memiliki dua kemungkinan nilai: `true` (1) atau `false` (0)",
+                    "Digunakan untuk menyimpan angka pecahan desimal presisi tinggi",
+                    "Ukuran memorinya mencapai 4 Byte",
+                    "Hanya dapat dibaca oleh perintah `analogRead()`"
+                ],
+                answer: 1
+            },
+
+            // --- 5 SOAL PILIHAN GANDA KOMPLEKS (LEBIH DARI 1 JAWABAN BENAR) ---
+            {
+                type: "complex",
+                caseStudy: "Studi Kasus Kompleks 1: Siswa merancang Smart Home System di SMAN 1 Tangen menggunakan Arduino Uno. Mereka mengonfigurasi sensor cahaya (LDR) pada Pin A0 dan Lampu Taman pada Pin 9.",
+                question: "Manakah dari pernyataan berikut yang **BENAR** terkait karakteristik perintah I/O dan variabel sistem tersebut? (Pilih lebih dari satu)",
+                options: [
+                    "Pembacaan nilai sensor LDR menggunakan fungsi `analogRead(A0)`",
+                    "Pin 9 dapat dikontrol kecerahannya dengan `analogWrite(9, nilai)` karena mendukung PWM",
+                    "Pengontrolan sakelar On/Off lampu taman secara tegas menggunakan `digitalWrite(9, HIGH/LOW)`",
+                    "Nilai dari `analogRead(A0)` menghasilkan rentang sinyal digital 0 sampai 1 saja",
+                    "Fungsi `digitalRead(A0)` adalah satu-satunya cara membaca sensor analog"
+                ],
+                answers: [0, 1, 2] // Index jawaban benar
+            },
+            {
+                type: "complex",
+                question: "Manakah aturan dan karakteristik penulisan kode sintaks C Arduino berikut yang **BENAR**? (Pilih lebih dari satu)",
+                options: [
+                    "Setiap statemen instruksi wajib diakhiri dengan titik koma (`;`)",
+                    "Aturan penulisan variabel bersifat *case-sensitive* (membedakan huruf besar dan kecil)",
+                    "Perintah `#include <Servo.h>` harus diakhiri titik koma",
+                    "Blok kode program pada fungsi atau kondisi dibuka dan ditutup dengan kurung kurawal `{ }`",
+                    "Nama variabel boleh diawali dengan angka, contoh: `123lampu`"
+                ],
+                answers: [0, 1, 3]
+            },
+            {
+                type: "complex",
+                caseStudy: "Studi Kasus Kompleks 2: Dalam membuat proyek pemilah barang otomatis berbasis berat, ditemukan bug di mana motor stepper bergerak tidak teratur.",
+                question: "Tindakan Berpikir Komputasional dan Debugging Arduino yang **TEPAT** untuk menyelesaikan masalah ini adalah... (Pilih lebih dari satu)",
+                options: [
+                    "Menggunakan `Serial.println()` untuk mencetak nilai sensor ke Serial Monitor guna memeriksa keakuratan data",
+                    "Menerapkan metode Abstraksi dengan fokus memverifikasi logika kode tanpa terdistraksi komponen fisik dulu",
+                    "Mengganti seluruh papan Arduino tanpa memeriksa kode program sama sekali",
+                    "Memeriksa apakah terdapat kesalahan tanda kurung kurawal atau titik koma pada sintaks percabangan",
+                    "Menghapus baris `Serial.begin(9600)` agar komunikasi data semakin cepat"
+                ],
+                answers: [0, 1, 3]
+            },
+            {
+                type: "complex",
+                question: "Pernyataan yang **BENAR** mengenai tipe data dan nilai konstanta pada pemrograman C Arduino adalah... (Pilih lebih dari satu)",
+                options: [
+                    "Konstanta `HIGH` mewakili tingkat tegangan tinggi (5V) atau kondisi logika 1",
+                    "Tipe data `int` menyimpan angka bulat dengan rentang -32,768 hingga 32,767 di Arduino Uno",
+                    "Tipe data `float` digunakan untuk menyimpan nilai desimal berpresisi",
+                    "Konstanta `LOW` sama nilainya dengan logika `TRUE`",
+                    "Tipe data `char` digunakan untuk menyimpan array nilai analog"
+                ],
+                answers: [0, 1, 2]
+            },
+            {
+                type: "complex",
+                caseStudy: "Studi Kasus Kompleks 3: Guru meminta siswa membuat indikator lampu berjalan (*Running LED*) sebanyak 4 buah LED yang terhubung pada Pin 2, 3, 4, dan 5.",
+                question: "Manakah teknik pemrograman C Arduino yang **EFEKTIF & EFISIEN** untuk skenario tersebut? (Pilih lebih dari satu)",
+                options: [
+                    "Menggunakan variabel Array: `int ledPins[] = {2, 3, 4, 5};`",
+                    "Menggunakan perulangan `for` untuk inisialisasi `pinMode` semua LED secara otomatis",
+                    "Menuliskan perintah `pinMode()` secara manual berulang-ulang sebanyak 100 baris",
+                    "Menggunakan perulangan `for` untuk menyalakan dan mematikan LED secara bergantian berdasarkan indeks Array",
+                    "Menghapus fungsi `loop()` karena running LED hanya butuh dinyalakan sekali"
+                ],
+                answers: [0, 1, 3]
+            }
+        ];
+
+        let shuffledQuestions = [];
+        let currentQIndex = 0;
+        let studentAnswers = {}; // Map index to answer: number (single) or Array (complex)
+        let studentData = {};
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startExam(event) {
+            event.preventDefault();
+
+            // Collect Student Info
+            studentData = {
+                name: document.getElementById('inputName').value.trim(),
+                class: document.getElementById('inputClass').value,
+                nis: document.getElementById('inputNis').value.trim(),
+                startTime: new Date().toLocaleString('id-ID')
+            };
+
+            // Update Header UI
+            document.getElementById('badgeName').textContent = studentData.name;
+            document.getElementById('badgeClass').textContent = studentData.class;
+            document.getElementById('studentBadge').classList.remove('hidden');
+
+            // Prepare & Shuffle Questions and Options
+            const singles = shuffleArray(rawQuestions.filter(q => q.type === 'single'));
+            const complexes = shuffleArray(rawQuestions.filter(q => q.type === 'complex'));
+
+            // Combine: 20 Singles + 5 Complexes
+            shuffledQuestions = [...singles, ...complexes].map(q => {
+                if (q.type === 'single') {
+                    const originalOptions = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === q.answer }));
+                    const shuffledOpts = shuffleArray(originalOptions);
+                    return {
+                        ...q,
+                        options: shuffledOpts.map(o => o.text),
+                        answer: shuffledOpts.findIndex(o => o.isCorrect)
+                    };
+                } else {
+                    const originalOptions = q.options.map((opt, idx) => ({ text: opt, isCorrect: q.answers.includes(idx) }));
+                    const shuffledOpts = shuffleArray(originalOptions);
+                    return {
+                        ...q,
+                        options: shuffledOpts.map(o => o.text),
+                        answers: shuffledOpts.reduce((acc, curr, idx) => curr.isCorrect ? [...acc, idx] : acc, [])
+                    };
+                }
+            });
+
+            // Switch Screen
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('examScreen').classList.remove('hidden');
+
+            // Load First Question
+            currentQIndex = 0;
+            loadQuestion(currentQIndex);
+        }
+
+        function loadQuestion(index) {
+            const q = shuffledQuestions[index];
+
+            // Render Header Status & Progress Bar
+            document.getElementById('currentQNum').textContent = index + 1;
+            document.getElementById('progressBar').style.width = `${((index + 1) / shuffledQuestions.length) * 100}%`;
+
+            const catBadge = document.getElementById('questionCategory');
+            const instructionText = document.getElementById('instructionText');
+
+            if (q.type === 'single') {
+                catBadge.textContent = "Pilihan Ganda Tunggal";
+                catBadge.className = "px-3 py-1 bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-full";
+                instructionText.classList.add('hidden');
+            } else {
+                catBadge.textContent = "Pilihan Ganda Kompleks";
+                catBadge.className = "px-3 py-1 bg-purple-100 text-purple-700 font-semibold text-xs rounded-full";
+                instructionText.classList.remove('hidden');
+            }
+
+            // Render Case Study if exists
+            const caseBox = document.getElementById('caseStudyText');
+            if (q.caseStudy) {
+                caseBox.textContent = q.caseStudy;
+                caseBox.classList.remove('hidden');
+            } else {
+                caseBox.classList.add('hidden');
+            }
+
+            // Render Question Text
+            document.getElementById('questionText').textContent = q.question;
+
+            // Render Options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D', 'E'];
+
+            q.options.forEach((optText, optIdx) => {
+                const optionWrapper = document.createElement('label');
+                optionWrapper.className = "flex items-start p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 cursor-pointer transition select-none group";
+
+                if (q.type === 'single') {
+                    const isChecked = studentAnswers[index] === optIdx;
+                    optionWrapper.innerHTML = `
+                        <input type="radio" name="q_option" value="${optIdx}" ${isChecked ? 'checked' : ''} onchange="saveAnswer(${index}, ${optIdx})" class="mt-1 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                        <span class="ml-3 text-sm text-slate-700 group-hover:text-slate-900 font-medium">
+                            <strong class="text-indigo-600 mr-1">${optionLabels[optIdx]}.</strong> ${escapeHtml(optText)}
+                        </span>
+                    `;
+                } else {
+                    const currentAns = studentAnswers[index] || [];
+                    const isChecked = currentAns.includes(optIdx);
+                    optionWrapper.innerHTML = `
+                        <input type="checkbox" name="q_option" value="${optIdx}" ${isChecked ? 'checked' : ''} onchange="saveComplexAnswer(${index}, ${optIdx})" class="mt-1 text-indigo-600 focus:ring-indigo-500 h-4 w-4 rounded">
+                        <span class="ml-3 text-sm text-slate-700 group-hover:text-slate-900 font-medium">
+                            <strong class="text-purple-600 mr-1">${optionLabels[optIdx]}.</strong> ${escapeHtml(optText)}
+                        </span>
+                    `;
+                }
+
+                optionsContainer.appendChild(optionWrapper);
+            });
+
+            // Update Previous Button State
+            const btnPrev = document.getElementById('btnPrev');
+            if (index === 0) {
+                btnPrev.disabled = true;
+                btnPrev.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            // Update Next / Submit Button Text
+            const btnNext = document.getElementById('btnNext');
+            const btnNextText = document.getElementById('btnNextText');
+            const btnNextIcon = document.getElementById('btnNextIcon');
+
+            if (index === shuffledQuestions.length - 1) {
+                btnNextText.textContent = "Selesai & Kirim";
+                btnNextIcon.className = "fa-solid fa-paper-plane text-xs";
+                btnNext.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl transition flex items-center space-x-2 shadow";
+            } else {
+                btnNextText.textContent = "Berikutnya";
+                btnNextIcon.className = "fa-solid fa-chevron-right text-xs";
+                btnNext.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl transition flex items-center space-x-2 shadow";
+            }
+        }
+
+        function saveAnswer(qIndex, optIndex) {
+            studentAnswers[qIndex] = optIndex;
+        }
+
+        function saveComplexAnswer(qIndex, optIndex) {
+            if (!studentAnswers[qIndex]) {
+                studentAnswers[qIndex] = [];
+            }
+            const arr = studentAnswers[qIndex];
+            const foundIdx = arr.indexOf(optIndex);
+            if (foundIdx > -1) {
+                arr.splice(foundIdx, 1);
+            } else {
+                arr.push(optIndex);
+            }
+            studentAnswers[qIndex] = arr;
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                loadQuestion(currentQIndex);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < shuffledQuestions.length - 1) {
+                currentQIndex++;
+                loadQuestion(currentQIndex);
+            } else {
+                finishExam();
+            }
+        }
+
+        function finishExam() {
+            let totalCorrectExact = 0;
+            let earnedPoints = 0;
+            const totalQuestions = shuffledQuestions.length;
+
+            // Scoring parameters (Total = 100 points)
+            // 20 Single choice questions = 3 points each (60 points total)
+            // 5 Complex choice questions = 8 points each (40 points total)
+            const WEIGHT_SINGLE = 3;
+            const WEIGHT_COMPLEX = 8;
+
+            shuffledQuestions.forEach((q, idx) => {
+                const userAns = studentAnswers[idx];
+
+                if (q.type === 'single') {
+                    if (userAns !== undefined && userAns === q.answer) {
+                        totalCorrectExact++;
+                        earnedPoints += WEIGHT_SINGLE;
+                    }
+                } else if (q.type === 'complex') {
+                    if (Array.isArray(userAns) && userAns.length > 0) {
+                        const correctAnswers = q.answers;
+                        const totalOptionsCount = q.options.length;
+                        
+                        // Calculate matching options (both correct selections and correct non-selections)
+                        let correctMatches = 0;
+                        for (let oIdx = 0; oIdx < totalOptionsCount; oIdx++) {
+                            const isSelected = userAns.includes(oIdx);
+                            const isShouldBeSelected = correctAnswers.includes(oIdx);
+                            
+                            if (isSelected === isShouldBeSelected) {
+                                correctMatches++;
+                            }
+                        }
+                        
+                        // Proportional partial score for this complex question
+                        const questionScore = (correctMatches / totalOptionsCount) * WEIGHT_COMPLEX;
+                        earnedPoints += questionScore;
+
+                        // Check if completely exact for the "Perfect Answers" counter
+                        const sortedUser = [...userAns].sort();
+                        const sortedCorrect = [...correctAnswers].sort();
+                        if (JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect)) {
+                            totalCorrectExact++;
+                        }
+                    }
+                }
+            });
+
+            // Round final score to nearest integer (max 100)
+            const score = Math.min(100, Math.round(earnedPoints));
+
+            // Populate Result Screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('correctCount').textContent = `${totalCorrectExact} / ${totalQuestions}`;
+            document.getElementById('resName').textContent = studentData.name;
+            document.getElementById('resClass').textContent = studentData.class;
+            document.getElementById('resNis').textContent = studentData.nis;
+            document.getElementById('resTime').textContent = new Date().toLocaleString('id-ID');
+
+            // Switch Screen
+            document.getElementById('examScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            // Send Data to Google Sheets via Web App API
+            sendDataToGoogleSheets({
+                timestamp: new Date().toLocaleString('id-ID'),
+                nama: studentData.name,
+                kelas: studentData.class,
+                nis: studentData.nis,
+                benar: totalCorrectExact,
+                totalSoal: totalQuestions,
+                nilai: score
+            });
+        }
+
+        function sendDataToGoogleSheets(payload) {
+            const statusElem = document.getElementById('syncStatus');
+
+            if (GOOGLE_SCRIPT_URL.includes("AKfycbxB34WEXAMPleScriptURL_Here")) {
+                statusElem.className = "text-sm font-semibold text-rose-600 mt-2";
+                statusElem.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> URL Script belum diset`;
+                return;
+            }
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                statusElem.className = "text-sm font-semibold text-emerald-600 mt-2 flex items-center justify-center";
+                statusElem.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Tersimpan di Sheets`;
+            })
+            .catch(err => {
+                console.error("Gagal mengirim data:", err);
+                statusElem.className = "text-sm font-semibold text-amber-600 mt-2 flex items-center justify-center";
+                statusElem.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Gagal Sinkron`;
+            });
+        }
+
+        // Utility: Escape HTML String
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
